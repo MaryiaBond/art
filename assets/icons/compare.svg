@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Сравнить">
+<title>Сравнить</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="edge" d="M10 12H36V48H10Z"/>
+    <path class="a" d="M13 37L22 27L33 36V45H13Z"/>
+    <circle class="b" cx="27" cy="21" r="4"/>
+    <path class="edge" d="M30 19H54V54H30Z"/>
+    <path class="c" d="M33 48L41 36L51 42V51H33Z"/>
+    <path class="ink" d="M19 56L57 10"/>
+  
+</svg>

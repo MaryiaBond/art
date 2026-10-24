@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Любопытство">
+<title>Любопытство</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M10 32C20 16 42 16 53 32C42 48 20 48 10 32Z"/>
+    <path class="a" d="M20 21C30 16 45 20 53 32L39 32L32 23Z"/>
+    <circle class="edge" cx="32" cy="32" r="11"/>
+    <circle class="b" cx="35" cy="29" r="5"/>
+    <path class="c" d="M12 12L20 9L23 17L14 20Z"/>
+    <path class="ink" d="M45 9L48 15M52 13L54 18"/>
+  
+</svg>

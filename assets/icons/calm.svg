@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Покой">
+<title>Покой</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M9 29C17 23 24 23 32 29S47 35 55 29M9 39C17 33 24 33 32 39S47 45 55 39"/>
+    <path class="a" d="M11 22Q32 1 53 22Z"/>
+    <path class="b" d="M14 45Q32 53 50 45L44 55H21Z"/>
+    <circle class="c" cx="32" cy="19" r="6"/>
+  
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Палитра">
+<title>Палитра</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M17 49L43 17M17 49L51 36M17 49L18 10"/>
+    <path class="a" d="M14 9L23 11L23 38L14 43Z"/>
+    <path class="b" d="M44 13L53 21L34 43L25 36Z"/>
+    <path class="c" d="M49 31L55 42L29 53L25 43Z"/>
+    <circle class="edge" cx="17" cy="49" r="5.5"/>
+  
+</svg>

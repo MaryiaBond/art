@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Меланхолия">
+<title>Меланхолия</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M14 15C23 10 41 10 51 20L47 44C38 54 22 53 15 43Z"/>
+    <path class="a" d="M14 15C20 10 31 11 36 13L27 48C20 47 17 44 15 43Z"/>
+    <path class="ink" d="M32 25L36 23M43 26L47 28M33 40Q40 35 45 41"/>
+    <path class="b" d="M46 29C42 38 49 38 48 45C55 43 57 36 46 29Z"/>
+    <path class="c" d="M11 52L20 45L23 55Z"/>
+  
+</svg>

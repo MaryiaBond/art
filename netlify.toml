@@ -1,0 +1,19 @@
+[build]
+  publish = "dist"
+  command = "node scripts/build.mjs"
+[functions]
+  directory = "netlify/functions"
+[[headers]]
+ for = "/src/*"
+ [headers.values]
+ Cache-Control = "public, max-age=3600"
+[[headers]]
+ for = "/assets/*"
+ [headers.values]
+ Cache-Control = "public, max-age=3600"
+[[headers]]
+ for = "/*.html"
+ [headers.values]
+ X-Content-Type-Options = "nosniff"
+ X-Frame-Options = "DENY"
+ Referrer-Policy = "strict-origin-when-cross-origin"

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Практика">
+<title>Практика</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M10 26V13H23M41 13H53V26M53 42V53H41M23 53H10V42"/>
+    <path class="edge" d="M17 34C24 23 40 22 49 34C39 45 27 46 17 34Z"/>
+    <circle class="a" cx="33" cy="34" r="8"/>
+    <circle class="b" cx="33" cy="34" r="2.7"/>
+    <path class="ink" d="M43 12L49 7"/>
+  
+</svg>

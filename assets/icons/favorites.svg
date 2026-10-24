@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Избранное">
+<title>Избранное</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M32 53C22 44 12 37 12 26C12 18 17 13 24 13C28 13 31 15 33 19C35 15 40 11 46 13C54 15 56 22 53 30C50 38 42 45 32 53Z"/>
+    <path class="a" d="M15 25C15 17 21 14 27 17L31 23L25 34L16 34Z"/>
+    <path class="b" d="M35 20C40 13 50 14 52 23L48 35L33 41Z"/>
+    <path class="c" d="M23 42L32 51L39 44L33 37Z"/>
+  
+</svg>

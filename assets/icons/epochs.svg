@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Эпохи">
+<title>Эпохи</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M11 54H55"/>
+    <path class="edge" d="M14 46H51V54H14Z"/>
+    <path class="a" d="M20 33H47V46H20Z"/>
+    <path class="edge" d="M25 19H44V33H25Z"/>
+    <path class="b" d="M32 8L46 19H18Z"/>
+    <path class="ink" d="M14 46L20 33M47 33L51 46"/>
+    <circle class="c" cx="50" cy="12" r="5.5"/>
+  
+</svg>

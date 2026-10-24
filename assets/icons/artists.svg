@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Художники">
+<title>Художники</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M12 52C13 43 21 42 25 39M40 40C49 41 53 45 53 53"/>
+    <path class="edge" d="M32 10C20 10 18 22 21 32C23 40 29 44 33 44C42 44 47 32 46 24C45 15 41 10 32 10Z"/>
+    <path class="a" d="M23 12C17 21 19 34 25 40L32 44V11Z"/>
+    <path class="ink" d="M35 27L40 25M34 34L40 35"/>
+    <path class="b" d="M43 8L52 15L47 23L39 16Z"/>
+    <circle class="c" cx="16" cy="15" r="4.5"/>
+  
+</svg>

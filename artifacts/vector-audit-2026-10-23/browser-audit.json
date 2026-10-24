@@ -1,0 +1,68 @@
+{
+  "screenshots": [
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/01-my-lessons.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/02-ai-lesson-create.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/03-artwork-palette-saved.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/04-practice.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/05-personal-gallery.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/06-self-portrait.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/07-k001-exhibit.png",
+    "/Users/maryiabondar/Documents/ATELIER-MVP/artifacts/vector-audit-2026-10-23/08-k002-exhibit.png"
+  ],
+  "checks": {
+    "libraryPaletteCount": 11,
+    "libraryArrowCount": 12,
+    "aiBackArrow": {
+      "count": 1,
+      "paths": 3,
+      "transform": "matrix(-1, 0, 0, 1, 0, 0)"
+    },
+    "selectsRemainNative": 3,
+    "venusCardCount": 1,
+    "openedArtworkTitle": "Рождение Венеры",
+    "artworkPaletteIconBeforeOpen": 1,
+    "artworkSwatchCount": 4,
+    "arrowColors": {
+      "before": [
+        "#777B77",
+        "#929692",
+        "#A8ABA7"
+      ],
+      "after": [
+        "#C8B69A",
+        "#929692",
+        "#A8ABA7"
+      ],
+      "changed": true
+    },
+    "savedSwatchPressed": "true",
+    "practicePaletteIcons": 1,
+    "galleryPieces": 7,
+    "galleryMiniFrames": 7,
+    "galleryPaletteIcons": 7,
+    "k001Teaser": 1,
+    "k002Teaser": 1,
+    "k001Rendered": {
+      "level": 1,
+      "overlay": 1,
+      "status": 1
+    },
+    "k002Rendered": {
+      "level": 1
+    },
+    "indexedDbColorAfterReload": [
+      {
+        "id": "venus:0",
+        "artworkId": "venus",
+        "hex": "#C8B69A"
+      }
+    ],
+    "serviceWorker": {
+      "active": "activated",
+      "cacheKeys": [
+        "art-v1-0-7"
+      ],
+      "version": "art-v1-0-7"
+    }
+  }
+}

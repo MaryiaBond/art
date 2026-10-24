@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Заметки">
+<title>Заметки</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="edge" d="M15 10H42L52 20V54H15Z"/>
+    <path class="ink" d="M42 10V20H52"/>
+    <path class="a" d="M22 28L36 24L32 35L45 31"/>
+    <path class="ink" d="M23 43L44 43M23 48H36"/>
+    <circle class="b" cx="47" cy="48" r="6"/>
+  
+</svg>

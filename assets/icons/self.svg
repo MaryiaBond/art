@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Автопортрет">
+<title>Автопортрет</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M11 45V13H46"/>
+    <path class="ink" d="M53 22V55H24"/>
+    <path class="edge" d="M28 12C17 13 17 29 22 38L16 48L47 50L42 38C50 28 46 13 35 12Z"/>
+    <path class="a" d="M31 13C18 14 19 32 25 39L21 49L32 50Z"/>
+    <circle class="b" cx="38" cy="27" r="3"/>
+    <path class="ink" d="M35 39L43 37"/>
+    <path class="c" d="M43 11L53 15L48 23Z"/>
+  
+</svg>

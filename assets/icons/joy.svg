@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="ATELIER — Восторг">
+<title>Восторг</title>
+<style>
+:root{--ink:#292824;--paper:#fbfaf7;--c1:#b85642;--c2:#d5a340;--c3:#6e8991}
+.ink{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.edge{stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;fill:var(--paper)}
+.a,.b,.c{stroke:var(--ink);stroke-width:2.45;stroke-linecap:round;stroke-linejoin:round}
+.a{fill:var(--c1)}.b{fill:var(--c2)}.c{fill:var(--c3)}
+</style>
+
+    <path class="ink" d="M29 9L35 17L45 13L45 24L56 29L48 36L52 47L40 46L32 56L25 46L12 48L16 36L8 28L20 24L19 13Z"/>
+    <path class="a" d="M29 9L35 17L45 13L45 24L34 28L22 22Z"/>
+    <path class="b" d="M48 36L52 47L40 46L32 56L26 45L35 35Z"/>
+    <circle class="c" cx="27" cy="29" r="4.2"/>
+    <path class="ink" d="M37 28L42 27M25 39Q33 45 40 36"/>
+  
+</svg>

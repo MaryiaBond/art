@@ -1,0 +1,97 @@
+{
+  "paletteTokens": [
+    "--art-c1",
+    "--art-c2",
+    "--art-c3"
+  ],
+  "k001": {
+    "levels": [
+      {
+        "id": "level-1",
+        "minSavedArtworks": 7,
+        "title": "Неатрибутированный мужичок"
+      },
+      {
+        "id": "level-2",
+        "minSavedArtworks": 12,
+        "title": "Культурно значимый мужичок"
+      },
+      {
+        "id": "level-3",
+        "minSavedArtworks": 20,
+        "title": "Мужичок музейного значения"
+      },
+      {
+        "id": "level-4",
+        "minSavedArtworks": 35,
+        "title": "Особо ценный мужичок"
+      },
+      {
+        "id": "level-5",
+        "minSavedArtworks": 60,
+        "title": "Мужичок — национальное достояние"
+      }
+    ],
+    "schools": [
+      "archaic",
+      "sacred",
+      "humanist",
+      "dramatic",
+      "natural-light",
+      "nervous",
+      "constructive",
+      "reality-disputed"
+    ],
+    "overlays": [
+      "archaic",
+      "sacred",
+      "humanist",
+      "dramatic",
+      "natural-light",
+      "nervous",
+      "constructive",
+      "reality-disputed"
+    ],
+    "status": [
+      "not-for-catalog",
+      "conditionally-admitted",
+      "internal-fund",
+      "special-storage",
+      "permanent-exhibition"
+    ]
+  },
+  "k002": {
+    "levels": [
+      {
+        "id": "level-1",
+        "minCreatedLessons": 3,
+        "title": "Причастный к созданию"
+      },
+      {
+        "id": "level-2",
+        "minCreatedLessons": 7,
+        "title": "Кустарное производство"
+      },
+      {
+        "id": "level-3",
+        "minCreatedLessons": 15,
+        "title": "Деятель просвещения"
+      },
+      {
+        "id": "level-4",
+        "minCreatedLessons": 30,
+        "title": "Промышленный масштаб"
+      },
+      {
+        "id": "level-5",
+        "minCreatedLessons": 60,
+        "title": "Министерство культуры"
+      }
+    ]
+  },
+  "ui": [
+    "artist-palette",
+    "mini-frame",
+    "three-stroke-arrow"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "planExistingArtistNames": [
+    "Ян Вермеер"
+  ],
+  "verifyExistingKeys": [
+    "met:327124",
+    "met:544227",
+    "met:253370",
+    "met:448283",
+    "uffizi:birth-of-venus",
+    "uffizi:botticelli-spring",
+    "louvre:cl010062370",
+    "mnk:xii-209",
+    "met:437881",
+    "met:435702",
+    "met:437127",
+    "marmottan:4014",
+    "met:436535",
+    "commons:af-klint-no7",
+    "nasa:AS17-148-22727"
+  ],
+  "stored": {
+    "artworkId": "local-met-369807",
+    "provider": "met",
+    "externalId": "369807",
+    "verificationStatus": "verified",
+    "artistId": "local-artist-rembrandt-rembrandt-van-rijn"
+  },
+  "diagnosticLogs": [
+    "ART Discovery verify {candidate: Рембрандт, fetched: 1, duplicates: 0, rejectedByReason: Object, accepted: 1}"
+  ],
+  "errors": []
+}

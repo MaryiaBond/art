@@ -1,0 +1,92 @@
+[
+  {
+    "width": 375,
+    "nav": {
+      "buttonCount": 3,
+      "labelBox": {
+        "width": 1,
+        "height": 1
+      },
+      "target": {
+        "width": 125,
+        "height": 75
+      },
+      "icon": {
+        "width": 31,
+        "height": 31
+      },
+      "activeBackground": "rgba(219, 222, 218, 0.55)",
+      "activeRadius": "12px",
+      "shadow": "none"
+    },
+    "palette": {
+      "width": 44,
+      "height": 44,
+      "background": "rgba(248, 248, 246, 0.72)",
+      "border": "rgba(216, 218, 214, 0.72)",
+      "shadow": "none",
+      "backdropFilter": "blur(5px)"
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "nav": {
+      "buttonCount": 3,
+      "labelBox": {
+        "width": 1,
+        "height": 1
+      },
+      "target": {
+        "width": 130,
+        "height": 75
+      },
+      "icon": {
+        "width": 31,
+        "height": 31
+      },
+      "activeBackground": "rgba(219, 222, 218, 0.55)",
+      "activeRadius": "12px",
+      "shadow": "none"
+    },
+    "palette": {
+      "width": 44,
+      "height": 44,
+      "background": "rgba(248, 248, 246, 0.72)",
+      "border": "rgba(216, 218, 214, 0.72)",
+      "shadow": "none",
+      "backdropFilter": "blur(5px)"
+    },
+    "errors": []
+  },
+  {
+    "width": 430,
+    "nav": {
+      "buttonCount": 3,
+      "labelBox": {
+        "width": 1,
+        "height": 1
+      },
+      "target": {
+        "width": 143,
+        "height": 75
+      },
+      "icon": {
+        "width": 31,
+        "height": 31
+      },
+      "activeBackground": "rgba(219, 222, 218, 0.55)",
+      "activeRadius": "12px",
+      "shadow": "none"
+    },
+    "palette": {
+      "width": 44,
+      "height": 44,
+      "background": "rgba(248, 248, 246, 0.72)",
+      "border": "rgba(216, 218, 214, 0.72)",
+      "shadow": "none",
+      "backdropFilter": "blur(5px)"
+    },
+    "errors": []
+  }
+]

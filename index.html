@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f7f6">
+    <meta name="description" content="ART — local-first приложение для изучения истории искусства.">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+    <link rel="apple-touch-icon" href="/assets/icon-192.png">
+    <title>ART — история искусства</title>
+    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="/src/features/k001/k001.css">
+    <script defer src="/assets/vue.global.js"></script>
+    <script type="module" src="/src/app.js"></script>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <div class="shell" :class="{'k001-modal-open':k001Open||k002Open}" :style="interfaceThemeStyle" ref="scrollRoot">
+            <header class="topbar"><button class="wordmark" @click="go('timeline')"
+                    aria-label="ART — на главную">ART<span class="wordmark-period">.</span></button><span
+                    class="topbar-center">{{pageLabel}}</span><button class="topbar-right" @click="go('profile')"
+                    aria-label="Автопортрет"><art-icon name="self" class="app-icon"
+                        :style="globalIconStyle('header-self')" aria-hidden="true"></art-icon></button></header>
+            <main class="main">
+                <div v-if="storageWarning" class="storage-warning">{{storageWarning}}</div>
+
+                <section v-if="page==='timeline'" class="view">
+                    <div class="page-intro">
+                        <div class="kicker"><span class="small-dot"></span> ART · ПРОВЕРЕННЫЙ СТАРТОВЫЙ КАТАЛОГ</div>
+                        <h1>Искусство<br>сквозь время<span class="thin-period">.</span></h1>
+                        <p>Одиннадцать исторических разделов, реальные произведения и короткие маршруты для
+                            внимательного взгляда.</p>
+                    </div>
+                    <div class="intro-panel">
+                        <div><span class="panel-micro">ТВОЙ ПУТЬ</span><strong>{{completedLessons}} /
+                                {{officialLessons.length}} уроков</strong></div><button @click="go('library')"
+                            class="plain-arrow">Мои уроки <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="timeline-title">
+                        <h2>Линия времени</h2><span>ПЕРИОДЫ ПЕРЕСЕКАЮТСЯ</span>
+                    </div>
+                    <div class="timeline">
+                        <article class="time-item" v-for="period in periods" :key="period.id">
+                            <div class="time-rail">
+                                <div class="era-year">{{period.year}}</div>
+                                <div class="rail-track">
+                                    <div class="rail-dot"
+                                        :class="{selected:selectedPeriodId===period.id,complete:periodProgress(period)===100}">
+                                    </div>
+                                    <div class="rail-line"></div>
+                                </div>
+                            </div>
+                            <div class="era-column">
+                                <button class="era-card" :class="{'era-selected':selectedPeriodId===period.id}"
+                                    @click="selectedPeriodId=selectedPeriodId===period.id?null:period.id">
+                                    <div class="era-top">
+                                        <span>{{period.phase}}</span><span>{{selectedPeriodId===period.id?'−':'+'}}</span>
+                                    </div>
+                                    <h3>{{period.title}}</h3>
+                                    <div class="era-materials"><span>{{periodStats(period).artists}} худож.</span><span>{{periodStats(period).artworks}} произвед.</span></div>
+                                    <div class="era-bottom">
+                                        <span>{{period.years}}</span><span v-if="periodStats(period).lessons">Пройдено {{periodStats(period).completedLessons}} из {{periodStats(period).lessons}} уроков</span><span v-else>Уроков пока нет</span></div>
+                                    <div v-if="periodStats(period).lessons" class="progress-line"><span :style="{width:periodStats(period).progressPercent+'%'}"></span>
+                                    </div>
+                                </button>
+                                <div class="era-expanded" v-if="selectedPeriodId===period.id">
+                                    <div class="era-cover"><img :src="by(artworks,period.artworkIds[0]).image"
+                                            :alt="by(artworks,period.artworkIds[0]).title" loading="lazy"
+                                            @error="markBroken"><span
+                                            class="img-fallback">{{period.title}}</span><artwork-quick-palette-trigger
+                                            :artwork="by(artworks,period.artworkIds[0])" :saved-colors="savedColors"
+                                            :open="quickPaletteId===period.artworkIds[0]" @toggle="toggleQuickPalette"
+                                            @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></div>
+                                    <p>{{period.context}}</p>
+                                    <button class="action-btn" @click="openPeriod(period.id)">Открыть раздел <art-arrow-icon
+                                            :colors="activeIconColors"></art-arrow-icon></button>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <p class="footnote">Шкала показывает последовательность для навигации, а не утверждает единственную
+                        линию развития искусства. Региональные традиции существовали одновременно и взаимодействовали.
+                    </p>
+                </section>
+
+                <section v-else-if="page==='period'" class="view"><button class="back"
+                        @click="go('timeline')"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon> Линия времени</button>
+                    <div class="kicker">{{activePeriod.years}} · {{activePeriod.region}}</div>
+                    <h1 class="inner-title">{{activePeriod.title}}</h1>
+                    <p class="lead">{{activePeriod.context}}</p>
+                    <div class="period-learning-summary"><div><span>Художники</span><strong>{{activePeriodStats.artists}}</strong></div><div><span>Произведения</span><strong>{{activePeriodStats.artworks}}</strong></div><div><span>Уроки</span><strong>{{activePeriodStats.lessons}}</strong></div><div><span>Пройдено</span><strong v-if="activePeriodStats.lessons">{{activePeriodStats.completedLessons}} из {{activePeriodStats.lessons}} ({{activePeriodStats.progressPercent}}%)</strong><strong v-else>Уроков пока нет</strong></div><div v-if="activePeriodStats.lessons" class="progress-line"><span :style="{width:activePeriodStats.progressPercent+'%'}"></span></div></div>
+                    <button class="secondary-btn full arrow-button practice-context-entry" @click="openPractice('period',activePeriod.id,'period')">Практика по эпохе <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    <section class="discovery-panel" aria-labelledby="discovery-title">
+                        <div class="discovery-panel-head">
+                            <div><span class="micro-label">AI DISCOVERY · МУЗЕЙНАЯ ПРОВЕРКА</span>
+                                <h2 id="discovery-title">История эпохи</h2>
+                            </div><span v-if="activeDiscovery"
+                                class="status-pill">{{activeDiscovery.status==='complete'?'СОХРАНЕНО':activeDiscovery.status==='empty'?'БЕЗ НОВЫХ ДАННЫХ':'В ПРОЦЕССЕ'}}</span>
+                        </div><template v-if="activeDiscovery">
+                            <p>{{activeDiscovery.overview}}</p>
+                            <div class="feature-list"><span v-for="feature in activeDiscovery.features"
+                                    :key="feature">{{feature}}</span></div>
+                            <div class="discovery-sources" v-if="activeDiscovery.sources.length"><a
+                                    v-for="(source,index) in activeDiscovery.sources" :key="source" :href="source"
+                                    target="_blank" rel="noopener">Музейный источник {{index+1}} ↗</a></div>
+                        </template>
+                        <p v-else>Gemini подготовит план исследования, а произведения попадут сюда только после
+                            подтверждения через открытые музейные каталоги.</p>
+                        <div v-if="discoveryProgress" class="discovery-progress" aria-live="polite">
+                            <strong>{{discoveryProgress.message}}</strong><span>Найдено {{discoveryProgress.artists||0}}
+                                художников · Проверено {{discoveryProgress.artworks||0}} произведений</span>
+                            <div class="progress-line"><span
+                                    :style="{width:Math.round((discoveryProgress.done||0)/Math.max(discoveryProgress.total||1,1)*100)+'%'}"></span>
+                            </div>
+                        </div>
+                        <p v-else-if="activeDiscovery?.lastMessage" class="micro-muted">{{activeDiscovery.lastMessage}}
+                        </p>
+                        <p v-if="discoveryError" class="notice">{{discoveryError}}</p><button class="action-btn"
+                            :disabled="!!discoveryProgress" @click="runDiscovery">{{discoveryActionLabel}}
+                            <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </section>
+                    <div class="section-heading">
+                        <h2>Художники и мастера</h2><button class="section-link" @click="go('period-artists')">Все <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="entity-chips"><button v-for="artist in periodArtists.slice(0,6)" :key="artist.id"
+                            @click="openArtist(artist.id)">{{artist.name}} <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button></div>
+                    <div class="section-heading">
+                        <h2>Произведения</h2><button class="section-link" @click="go('period-artworks')">Все <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="works-grid">
+                        <article v-for="art in periodArtworks.slice(0,4)" :key="art.id" class="work-card"><button
+                                class="work-card-open" @click="openArtwork(art.id)">
+                                <div class="work-image"><img :src="art.image" :alt="art.title" loading="lazy"
+                                        @error="markBroken"><span class="img-fallback">{{art.title}}</span></div><strong
+                                    class="work-name">{{art.title}}</strong><span class="work-artist">{{art.artist}} ·
+                                    {{art.year}}</span>
+                            </button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors"
+                                :open="quickPaletteId===art.id" @toggle="toggleQuickPalette"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article>
+                    </div>
+                    <div class="section-heading">
+                        <h2>Уроки</h2><button class="section-link" @click="go('period-lessons')">Все <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div><button class="secondary-btn full arrow-button epoch-lesson-open"
+                        @click="openEpochLessonBuilder">Создать урок по эпохе <art-arrow-icon
+                            :colors="activeIconColors"></art-arrow-icon></button>
+                    <section v-if="epochLessonOpen" class="epoch-lesson-builder" aria-labelledby="epoch-lesson-title">
+                        <div class="discovery-panel-head">
+                            <div><span class="micro-label">GEMINI · ПРОВЕРЕННЫЙ КАТАЛОГ</span>
+                                <h3 id="epoch-lesson-title">Новый урок</h3>
+                            </div><button class="text-btn" @click="epochLessonOpen=false">Закрыть</button>
+                        </div><label>Фокус<select v-model="epochLessonMode">
+                                <option value="overview">Общее знакомство</option>
+                                <option value="artist">Художник или мастер</option>
+                                <option value="artwork">Конкретное произведение</option>
+                                <option value="compare">Сравнение художников</option>
+                                <option value="visual">Художественные особенности</option>
+                            </select></label><label
+                            v-if="epochLessonMode==='artist'||epochLessonMode==='compare'">Первый художник<select
+                                v-model="epochLessonArtist">
+                                <option v-for="artist in periodArtists" :key="artist.id" :value="artist.id">
+                                    {{artist.name}}</option>
+                            </select></label><label v-if="epochLessonMode==='compare'">Второй художник<select
+                                v-model="epochLessonArtistSecond">
+                                <option v-for="artist in periodArtists" :key="artist.id" :value="artist.id">
+                                    {{artist.name}}</option>
+                            </select></label><label v-if="epochLessonMode==='artwork'">Произведение<select
+                                v-model="epochLessonArtwork">
+                                <option v-for="art in periodArtworks" :key="art.id" :value="art.id">{{art.title}} ·
+                                    {{art.artist}}</option>
+                            </select></label><label>Сложность<select v-model="epochLessonLevel">
+                                <option value="simple">Начальный уровень</option>
+                                <option value="deep">Углублённый уровень</option>
+                            </select></label><label>Подача<select v-model="epochLessonStyle">
+                                <option value="visual">Через визуальные детали</option>
+                                <option value="context">Через исторический контекст</option>
+                                <option value="compare">Через сравнение</option>
+                            </select></label>
+                        <p v-if="epochLessonError" class="notice">{{epochLessonError}}</p><button class="action-btn"
+                            :disabled="epochLessonLoading" @click="createEpochLesson">{{epochLessonLoading?'Создаём урок…':'Создать и сохранить'}} <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </section>
+                    <article class="lesson-card" v-for="lesson in periodLessons.slice(0,3)" :key="lesson.id">
+                        <div><span class="micro-label">{{lesson.source==='personal'?'ПЕРСОНАЛЬНЫЙ':`ОФИЦИАЛЬНЫЙ ·
+                                ${lesson.minutes} МИН`}}</span>
+                            <h3>{{lesson.title}}</h3>
+                            <p>{{lesson.summary}}</p>
+                        </div><button class="action-btn"
+                            @click="openLesson(lesson.id,'period')">{{lessonStatus(lesson.id)==='new'?'Начать':'Продолжить'}}
+                            <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </article>
+                    <button class="secondary-btn full arrow-button"
+                        @click="startPractice(activePeriod.practiceSetIds[0])">Тренировка по разделу <art-arrow-icon
+                            :colors="activeIconColors"></art-arrow-icon></button>
+                </section>
+
+                <section v-else-if="page==='period-artists'" class="view"><button class="back" @click="go('period')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> {{activePeriod.title}}</button>
+                    <div class="kicker">{{activePeriod.years}}</div><h1 class="inner-title">Художники и мастера</h1>
+                    <collection-toolbar :filters="[]" :filter-enabled="false" :sort-value="periodArtistSort" :sort-options="[{value:'name',label:'По имени'},{value:'chronology',label:'По хронологии'}]" :result-count="sortedPeriodArtists.length" @update-sort="periodArtistSort=$event"></collection-toolbar>
+                    <div class="entity-list"><button v-for="artist in visiblePeriodArtists" :key="artist.id" @click="openArtist(artist.id,'period-artists')"><span><strong>{{artist.name}}</strong><small>{{artist.region}}</small></span><art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></div>
+                    <button v-if="periodArtistVisible<sortedPeriodArtists.length" class="secondary-btn full collection-more" @click="showMore('period-artists',sortedPeriodArtists.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='period-artworks'" class="view"><button class="back" @click="go('period')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> {{activePeriod.title}}</button>
+                    <div class="kicker">ПОЛНАЯ КОЛЛЕКЦИЯ</div><h1 class="inner-title">Произведения эпохи</h1>
+                    <collection-toolbar :filters="periodArtworkFilterOptions" :filter-enabled="periodArtworks.length>8" :sort-value="periodArtworkSort" :sort-options="[{value:'chronology',label:'По хронологии'},{value:'added',label:'По добавлению'}]" :result-count="periodArtworkResults.length" @update-filter="updateCollectionFilter('period-artworks',$event)" @update-sort="periodArtworkSort=$event" @reset="resetCollectionFilters('period-artworks')"></collection-toolbar>
+                    <div class="works-grid"><article v-for="art in visiblePeriodArtworks" :key="art.id" class="work-card"><button class="work-card-open" @click="openArtwork(art.id,'period-artworks')"><div class="work-image"><img :src="art.image" :alt="art.title" loading="lazy" @error="markBroken"><span class="img-fallback">{{art.title}}</span></div><strong class="work-name">{{art.title}}</strong><span class="work-artist">{{art.artist}} · {{art.year}}</span></button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors" :open="quickPaletteId===art.id" @toggle="toggleQuickPalette" @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article></div>
+                    <button v-if="periodArtworkVisible<periodArtworkResults.length" class="secondary-btn full collection-more" @click="showMore('period-artworks',periodArtworkResults.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='period-lessons'" class="view"><button class="back" @click="go('period')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> {{activePeriod.title}}</button>
+                    <div class="kicker">ОФИЦИАЛЬНЫЕ И ПЕРСОНАЛЬНЫЕ</div><h1 class="inner-title">Уроки эпохи</h1>
+                    <collection-toolbar :filters="[{id:'status',label:'Статус',value:periodLessonStatus,options:[{value:'all',label:'Все статусы'},{value:'new',label:'Не начатые'},{value:'in-progress',label:'В процессе'},{value:'completed',label:'Завершённые'}]}]" :filter-enabled="periodLessons.length>8" :sort-options="[]" :result-count="filteredPeriodLessons.length" @update-filter="periodLessonStatus=$event.value" @reset="periodLessonStatus='all'"></collection-toolbar>
+                    <article class="library-card" v-for="lesson in visiblePeriodLessons" :key="lesson.id"><button type="button" class="library-card-hit" @click="openLesson(lesson.id,'period-lessons')"></button><div class="library-card-head"><span class="micro-label">{{lesson.source==='official'?'ОФИЦИАЛЬНЫЙ':'ПЕРСОНАЛЬНЫЙ'}}</span><span class="status-pill">{{lessonStatus(lesson.id)==='new'?'НЕ НАЧАТ':lessonStatus(lesson.id)==='in-progress'?'В ПРОЦЕССЕ':'ЗАВЕРШЁН'}}</span></div><h2>{{lesson.title}}</h2><p>{{lesson.summary}}</p><div class="progress-line"><span :style="{width:lessonProgressPercent(lesson)+'%'}"></span></div><div class="card-actions"><button class="arrow-button" @click="openLesson(lesson.id,'period-lessons')">{{lessonStatus(lesson.id)==='new'?'Начать':'Продолжить'}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></div></article>
+                    <button v-if="periodLessonVisible<filteredPeriodLessons.length" class="secondary-btn full collection-more" @click="showMore('period-lessons',filteredPeriodLessons.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='artist'" class="view"><button class="back"
+                        @click="goBack(artistReturn)"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon> Назад</button>
+                    <div class="kicker">{{activeArtist.region}}</div>
+                    <h1 class="inner-title">{{activeArtist.name}}</h1>
+                    <p v-if="activeArtistDiscovery?.fullName" class="artist-aliases"><strong>{{activeArtistDiscovery.fullName}}</strong><span v-if="activeArtistDiscovery.nameVariants.length"> · {{activeArtistDiscovery.nameVariants.join(' · ')}}</span></p>
+                    <div v-if="activeArtistDiscovery" class="artist-facts"><span v-if="activeArtistDiscovery.lifeYears">{{activeArtistDiscovery.lifeYears}}</span><span v-for="place in activeArtistDiscovery.activityPlaces" :key="place">{{place}}</span><span v-for="movement in activeArtistDiscovery.movements" :key="movement">{{movement}}</span></div>
+                    <template v-if="activeArtistDiscovery">
+                        <div class="section-heading"><h2>История художника</h2><span v-if="activeArtistDiscovery.verifiedAt">ПРОВЕРЕНО {{new Date(activeArtistDiscovery.verifiedAt).toLocaleDateString('ru-RU')}}</span></div>
+                        <div class="artist-history"><article v-for="section in activeArtistDiscovery.generatedSections" :key="section.id"><h3>{{section.title}}</h3><p>{{section.text}}</p></article></div>
+                        <div v-if="activeArtistDiscovery.verifiedFacts.length" class="artist-verified-facts"><div v-for="fact in activeArtistDiscovery.verifiedFacts" :key="fact.label"><span>{{fact.label}}</span><strong>{{fact.value}}</strong><a :href="fact.sourceUrl" target="_blank" rel="noopener">Источник ↗</a></div></div>
+                        <div class="section-heading"><h2>Этапы творчества</h2><span>{{activeArtistDiscovery.creativeStages.length}}</span></div>
+                        <div class="artist-stages"><article v-for="stage in activeArtistDiscovery.creativeStages" :key="stage.id"><h3>{{stage.title}}</h3><p>{{stage.text}}</p></article></div>
+                        <div class="source-row"><a v-for="source in activeArtistDiscovery.sources" :key="source.url" :href="source.url" target="_blank" rel="noopener">{{source.label}} ↗</a></div>
+                    </template>
+                    <p v-else class="lead">{{activeArtist.biography||`В проверенном каталоге: ${artistArtworks.length} ${artistArtworks.length===1?'произведение':'произведения'}. Биографические сведения появятся после исследования.`}}</p>
+                    <div class="section-heading">
+                        <h2>Произведения</h2><button class="section-link" @click="go('artist-artworks')">Все · {{artistArtworks.length}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="works-grid">
+                        <article class="work-card" v-for="art in artistArtworks.slice(0,4)" :key="art.id"><button
+                                class="work-card-open" @click="openArtwork(art.id)">
+                                <div class="work-image"><img :src="art.image" :alt="art.title" loading="lazy"><span
+                                        class="img-fallback">{{art.title}}</span></div><strong
+                                    class="work-name">{{art.title}}</strong><span
+                                    class="work-artist">{{art.year}}</span>
+                            </button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors"
+                                :open="quickPaletteId===art.id" @toggle="toggleQuickPalette"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article>
+                    </div>
+                    <button class="secondary-btn full arrow-button practice-context-entry" @click="openPractice('artist',activeArtist.id,'artist')">Практика по художнику <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    <div class="section-heading">
+                        <h2>Связанные уроки</h2>
+                    </div><button class="saved-lesson"
+                        v-for="lesson in officialLessons.filter(l=>l.artworkIds.some(id=>artistArtworks.some(a=>a.id===id)))"
+                        :key="lesson.id" @click="openLesson(lesson.id,'period')">{{lesson.title}} <art-arrow-icon
+                            :colors="activeIconColors"></art-arrow-icon></button>
+                    <section class="artist-discovery-panel" aria-labelledby="artist-discovery-title"><div class="discovery-panel-head"><div><span class="micro-label">AI DISCOVERY · АВТОРИТЕТНЫЕ ИСТОЧНИКИ</span><h2 id="artist-discovery-title">Исследование художника</h2></div><span v-if="activeArtistDiscovery" class="status-pill">{{activeArtistDiscovery.status==='ready'?'ПЕРВАЯ ПОДБОРКА ГОТОВА':activeArtistDiscovery.status==='expanding'?'ВЫПОЛНЯЕТСЯ':activeArtistDiscovery.status==='paused'?'ПРИОСТАНОВЛЕНО':'ИСТОЧНИКИ ОБРАБОТАНЫ'}}</span></div>
+                        <p v-if="!activeArtistDiscovery">Сначала сохраним проверяемую биографию и попробуем подтвердить до десяти известных произведений через музейные каталоги.</p><p v-else>{{activeArtistDiscovery.lastMessage}}</p>
+                        <div v-if="artistDiscoveryProgress" class="discovery-progress" aria-live="polite"><strong>{{artistDiscoveryProgress.message}}</strong><span>{{artistDiscoveryProgress.done||0}} / {{artistDiscoveryProgress.total||1}}</span><div class="progress-line"><span :style="{width:Math.round((artistDiscoveryProgress.done||0)/Math.max(artistDiscoveryProgress.total||1,1)*100)+'%'}"></span></div></div>
+                        <p v-if="artistDiscoveryError" class="notice">{{artistDiscoveryError}}</p>
+                        <details v-if="activeArtistDiscovery?.diagnostics?.fetched" class="artist-diagnostics"><summary>Диагностика музейной проверки</summary><div class="artist-diagnostic-counts"><span>Получено: {{activeArtistDiscovery.diagnostics.fetched}}</span><span>Дубликаты: {{activeArtistDiscovery.diagnostics.duplicates}}</span><span>Принято: {{activeArtistDiscovery.diagnostics.accepted}}</span><span>Сохранено: {{activeArtistDiscovery.diagnostics.saved}}</span></div><ul><li v-for="(count,reason) in activeArtistDiscovery.diagnostics.rejectedByReason" :key="reason" v-show="count">{{reason}} — {{count}}</li></ul></details>
+                        <button class="action-btn" :disabled="!!artistDiscoveryProgress||activeArtistDiscovery?.status==='complete'" @click="runArtistDiscovery">{{artistDiscoveryActionLabel}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </section>
+                </section>
+
+                <section v-else-if="page==='artist-artworks'" class="view"><button class="back" @click="go('artist')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> {{activeArtist.name}}</button>
+                    <div class="kicker">ПОЛНАЯ КОЛЛЕКЦИЯ</div><h1 class="inner-title">Произведения художника</h1>
+                    <collection-toolbar :filters="[{id:'type',label:'Тип произведения',value:artistArtworkType,options:[{value:'all',label:'Все типы'},...artistArtworkTypes.map(value=>({value,label:value}))]}]" :filter-enabled="artistArtworks.length>8" :sort-value="artistArtworkSort" :sort-options="[{value:'chronology',label:'По хронологии'},{value:'added',label:'По добавлению'}]" :result-count="artistArtworkResults.length" @update-filter="updateCollectionFilter('artist-artworks',$event)" @update-sort="artistArtworkSort=$event" @reset="resetCollectionFilters('artist-artworks')"></collection-toolbar>
+                    <div class="works-grid"><article v-for="art in visibleArtistArtworks" :key="art.id" class="work-card"><button class="work-card-open" @click="openArtwork(art.id,'artist-artworks')"><div class="work-image"><img :src="art.image" :alt="art.title" loading="lazy" @error="markBroken"><span class="img-fallback">{{art.title}}</span></div><strong class="work-name">{{art.title}}</strong><span class="work-artist">{{art.year}}</span></button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors" :open="quickPaletteId===art.id" @toggle="toggleQuickPalette" @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article></div>
+                    <button v-if="artistArtworkVisible<artistArtworkResults.length" class="secondary-btn full collection-more" @click="showMore('artist-artworks',artistArtworkResults.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='artwork'" class="view"><button class="back"
+                        @click="goBack(artworkReturn)"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon> Назад</button>
+                    <div class="artwork-full"><button type="button" class="artwork-viewer-open" @click="openArtworkViewer" :aria-label="`Открыть ${activeArtwork.title} на весь экран`"><img :src="activeArtwork.image" :alt="activeArtwork.title"
+                            @error="markBroken"><span
+                            class="img-fallback">{{activeArtwork.title}}</span></button><artwork-quick-palette-trigger
+                            :artwork="activeArtwork" :saved-colors="savedColors"
+                            :open="quickPaletteId===activeArtwork.id" @toggle="toggleQuickPalette"
+                            @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></div>
+                    <div class="art-head">
+                        <div>
+                            <div class="kicker">{{activeArtwork.year}} · {{activeArtwork.movement}}</div>
+                            <h1 class="inner-title">{{activeArtwork.title}}</h1><button class="artist-link arrow-button"
+                                @click="openArtist(activeArtwork.artistId)">{{activeArtwork.artist}} <art-arrow-icon
+                                    :colors="activeIconColors"></art-arrow-icon></button>
+                        </div><button class="circle-btn" :class="{chosen:isFavorite(activeArtwork.id)}"
+                            @click="toggleFavorite(activeArtwork.id)"
+                            :aria-label="isFavorite(activeArtwork.id)?'Убрать из галереи':'В мою галерею'"><art-icon
+                                name="favorites" class="app-icon" :style="favoriteIconStyle(activeArtwork)"
+                                aria-hidden="true"></art-icon></button>
+                    </div>
+                    <p class="lead">{{activeArtwork.detail}}</p>
+                    <dl class="metadata">
+                        <div>
+                            <dt>Датировка</dt>
+                            <dd>{{activeArtwork.year}} · {{activeArtwork.dateAccuracy}}</dd>
+                        </div>
+                        <div>
+                            <dt>Регион</dt>
+                            <dd>{{activeArtwork.region}}</dd>
+                        </div>
+                        <div>
+                            <dt>Материал</dt>
+                            <dd>{{activeArtwork.material}}</dd>
+                        </div>
+                        <div>
+                            <dt>Техника</dt>
+                            <dd>{{activeArtwork.technique}}</dd>
+                        </div>
+                        <div>
+                            <dt>Коллекция</dt>
+                            <dd>{{activeArtwork.museum}}</dd>
+                        </div>
+                    </dl>
+                    <div class="feature-list"><span v-for="feature in activeArtwork.features"
+                            :key="feature">{{feature}}</span></div>
+                    <div class="source-row"><a :href="activeArtwork.source" target="_blank" rel="noopener">Музейная
+                            запись ↗</a><a :href="activeArtwork.licenseUrl" target="_blank"
+                            rel="noopener">{{activeArtwork.license}} ↗</a></div>
+                    <div class="section-heading">
+                        <h2>Цвета произведения</h2><span>СОХРАНИ</span>
+                    </div>
+                    <artwork-palette-swatches :artwork="activeArtwork" :saved-colors="savedColors" :label="false" @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-palette-swatches>
+                    <div class="section-heading">
+                        <h2>Что ты чувствуешь?</h2>
+                    </div>
+                    <div class="chips"><button v-for="feeling in feelings" :key="feeling.id" class="chip"
+                            :class="{on:activeReflection.feelings.includes(feeling.id)}"
+                            @click="toggleFeeling(feeling.id)"><art-icon :name="feeling.icon" class="feeling-icon"
+                                :style="emotionIconStyle(feeling.id)"
+                                aria-hidden="true"></art-icon>{{feeling.name}}</button></div><label
+                        class="textarea-label" for="reflection">Личные ассоциации <span>·
+                            необязательно</span></label><textarea id="reflection" rows="4" maxlength="1200"
+                        :value="activeReflection.note" @input="setReflectionNote($event.target.value)"
+                        placeholder="Что ты замечаешь и о чём тебе напоминает эта работа?"></textarea>
+                    <p class="micro-muted">Запись остаётся только на этом устройстве и не отправляется в Gemini.</p>
+                    <div class="section-heading">
+                        <h2>Связанные уроки</h2>
+                    </div><button class="saved-lesson"
+                        v-for="lesson in officialLessons.filter(l=>l.artworkIds.includes(activeArtwork.id))"
+                        :key="lesson.id" @click="openLesson(lesson.id,'period')">{{lesson.title}} <art-arrow-icon
+                            :colors="activeIconColors"></art-arrow-icon></button>
+                </section>
+
+                <section v-else-if="page==='gallery'" class="view"><button class="back" @click="go('profile')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> Автопортрет</button>
+                    <div class="kicker">ЛИЧНАЯ КОЛЛЕКЦИЯ</div><h1 class="inner-title">Избранное</h1>
+                    <collection-toolbar :filters="galleryFilterOptions" :filter-enabled="favorites.length>8" :sort-value="gallerySort" :sort-options="[{value:'saved-desc',label:'Сначала недавние'},{value:'chronology',label:'По хронологии'}]" :result-count="galleryResults.length" @update-filter="updateCollectionFilter('gallery',$event)" @update-sort="gallerySort=$event" @reset="resetCollectionFilters('gallery')"></collection-toolbar>
+                    <div v-if="visibleGalleryResults.length" class="gallery-grid"><article v-for="art in visibleGalleryResults" :key="art.id" class="gallery-piece"><button class="gallery-piece-open" @click="openArtwork(art.id,'gallery')"><div class="work-image gallery-img"><img :src="art.image" :alt="art.title" loading="lazy" @error="markBroken"><span class="img-fallback">{{art.title}}</span></div><art-vector name="ui/mini-frame" :colors="activeIconColors" decorative class="gallery-mini-frame"></art-vector><strong>{{art.title}}</strong><span>{{art.artist}}</span></button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors" :open="quickPaletteId===art.id" @toggle="toggleQuickPalette" @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article></div>
+                    <div v-else class="empty-state">Нет произведений с такими параметрами.</div><button v-if="galleryVisible<galleryResults.length" class="secondary-btn full collection-more" @click="showMore('gallery',galleryResults.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='colors'" class="view"><button class="back" @click="go('profile')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> Автопортрет</button>
+                    <div class="kicker">ЛИЧНАЯ ПАЛИТРА</div><h1 class="inner-title">Все цвета</h1>
+                    <div class="collection-mode" role="group" aria-label="Режим просмотра"><button :class="{current:colorsMode==='shades'}" @click="colorsMode='shades'">По оттенкам</button><button :class="{current:colorsMode==='artworks'}" @click="colorsMode='artworks'">По произведениям</button></div>
+                    <collection-toolbar :filters="colorFilterOptions" :filter-enabled="savedColors.length>8" :sort-value="colorsSort" :sort-options="[{value:'saved-desc',label:'Сначала недавние'},{value:'spectrum',label:'По спектру'}]" :result-count="colorsMode==='shades'?colorsFiltered.length:colorsByArtwork.length" @update-filter="updateCollectionFilter('colors',$event)" @update-sort="colorsSort=$event" @reset="resetCollectionFilters('colors')"></collection-toolbar>
+                    <div v-if="colorsMode==='shades'&&visibleColors.length" class="color-library-grid"><article v-for="color in visibleColors" :key="color.id"><button class="color-library-swatch" :style="{background:color.hex}" @click="openArtwork(color.artworkId,'colors')" :aria-label="`Открыть произведение, цвет ${color.hex}${color.source==='user-picked'?', мой оттенок':''}`"><art-icon v-if="color.source==='user-picked'" name="self" class="user-color-mark" aria-label="Мой оттенок"></art-icon></button><div><code>{{color.hex}}</code><button @click="copyColor(color.hex)" :aria-label="`Скопировать ${color.hex}`">Копировать</button></div></article></div>
+                    <div v-else-if="colorsMode==='artworks'&&visibleColorGroups.length" class="color-artwork-groups"><article v-for="group in visibleColorGroups" :key="group.art.id"><button class="color-group-open" @click="openArtwork(group.art.id,'colors')"><img :src="group.art.image" :alt="group.art.title" loading="lazy"><span><strong>{{group.art.title}}</strong><small>{{group.art.artist}}</small></span></button><div class="color-group-swatches"><span v-for="color in group.colors" :key="color.id" class="color-group-swatch" :style="{background:color.hex}" :title="color.source==='user-picked'?`${color.hex} · Мой оттенок`:color.hex"><art-icon v-if="color.source==='user-picked'" name="self" class="user-color-mark" aria-label="Мой оттенок"></art-icon></span></div></article></div>
+                    <div v-else class="empty-state">Сохрани оттенки со страницы произведения.</div><button v-if="colorsVisible<(colorsMode==='shades'?colorsFiltered.length:colorsByArtwork.length)" class="secondary-btn full collection-more" @click="showMore('colors',colorsMode==='shades'?colorsFiltered.length:colorsByArtwork.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='library'" class="view">
+                    <div class="kicker">ОФИЦИАЛЬНЫЕ И ПЕРСОНАЛЬНЫЕ</div>
+                    <h1>Мои уроки<span class="thin-period">.</span></h1>
+                    <p class="lead">Продолжай с последнего блока или начни новый маршрут.</p>
+                    <collection-toolbar :filters="[{id:'status',label:'Статус',value:libraryStatus,options:[{value:'all',label:'Все статусы'},{value:'new',label:'Не начатые'},{value:'in-progress',label:'В процессе'},{value:'completed',label:'Завершённые'}]}]" :filter-enabled="officialLessons.length+db.personalLessons.length>8" :sort-value="librarySort" :sort-options="[{value:'activity',label:'По активности'},{value:'created',label:'По созданию'}]" :result-count="filteredLessons.length" @update-filter="libraryStatus=$event.value" @update-sort="librarySort=$event" @reset="libraryStatus='all'"></collection-toolbar>
+                    <div class="library-summary"><span>{{filteredLessons.length}} уроков</span><button
+                            class="arrow-button" @click="go('ai')">Создать персональный <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button></div>
+                    <article class="library-card" v-for="lesson in visibleLessons" :key="lesson.id"><button
+                            type="button" class="library-card-hit" @click="openLesson(lesson.id,'library')"
+                            :aria-label="`${lessonStatus(lesson.id)==='new'?'Начать':'Продолжить'} урок «${lesson.title}»`"></button>
+                        <div class="library-card-head"><span
+                                class="micro-label">{{lesson.source==='official'?'ОФИЦИАЛЬНЫЙ':'ПЕРСОНАЛЬНЫЙ'}} ·
+                                {{by(periods,lesson.periodId)?.title||'ТЕМА'}}</span><span
+                                class="status-pill">{{lessonStatus(lesson.id)==='new'?'НОВЫЙ':lessonStatus(lesson.id)==='in-progress'?'В ПРОЦЕССЕ':'ЗАВЕРШЁН'}}</span></div>
+                        <h2>{{lesson.title}}</h2>
+                        <p>{{lesson.summary}}</p><div v-if="lesson.artworkIds?.some(id=>by(artworks,id))" class="library-palettes"><artwork-palette-swatches
+                            v-for="id in lesson.artworkIds.filter(id=>by(artworks,id)).slice(0,3)" :key="id"
+                            :artwork="by(artworks,id)" :saved-colors="savedColors" compact :label="false"
+                            @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-palette-swatches></div>
+                        <div class="progress-line"><span :style="{width:lessonProgressPercent(lesson)+'%'}"></span>
+                        </div>
+                        <div class="card-actions"><button class="arrow-button"
+                                @click="openLesson(lesson.id,'library')">{{lessonStatus(lesson.id)==='new'?'Начать':'Продолжить'}}
+                                <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button><button
+                                @click="openLesson(lesson.id,'library',true)">Заново</button><button
+                                v-if="lesson.source==='personal'" class="danger-text"
+                                @click="deletePersonalLesson(lesson.id)">Удалить</button></div>
+                    </article>
+                    <div v-if="!filteredLessons.length" class="empty-state">Нет уроков с такими параметрами.</div>
+                    <button v-if="libraryVisible<filteredLessons.length" class="secondary-btn full collection-more" @click="showMore('library',filteredLessons.length)">Показать ещё</button>
+                </section>
+
+                <section v-else-if="page==='lesson'" class="view lesson-view"><button class="back"
+                        @click="goBack(['period','period-lessons'].includes(lessonReturn)?lessonReturn:'library')"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon>
+                        {{lessonReturn==='period'?activePeriod.title:lessonReturn==='period-lessons'?'Уроки эпохи':'Мои уроки'}}</button>
+                    <div class="lesson-step-line"><span>{{String(lessonProgressRecord.currentBlock+1).padStart(2,'0')}}
+                            /
+                            {{String(activeLesson.blocks.length).padStart(2,'0')}}</span><span>{{activeLesson.source==='personal'?'ПЕРСОНАЛЬНЫЙ':'ОФИЦИАЛЬНЫЙ'}}
+                            УРОК</span></div>
+                    <div class="progress-line wide"><span
+                            :style="{width:((lessonProgressRecord.currentBlock+1)/activeLesson.blocks.length*100)+'%'}"></span>
+                    </div>
+                    <div class="kicker">{{activeLesson.title}}</div>
+                    <h1 class="inner-title">{{currentLessonBlock.title}}</h1>
+                    <p class="lead">{{currentLessonBlock.text}}</p>
+                    <details v-if="activeLesson.artworkIds?.some(id=>by(artworks,id))" class="lesson-linked-palettes">
+                        <summary>Палитры произведений · {{activeLesson.artworkIds.filter(id=>by(artworks,id)).length}}
+                        </summary>
+                        <div v-for="id in activeLesson.artworkIds.filter(id=>by(artworks,id))" :key="id"
+                            class="lesson-linked-palette">
+                            <strong>{{by(artworks,id).title}}</strong><artwork-palette-swatches
+                                :artwork="by(artworks,id)" :saved-colors="savedColors" compact :label="false"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-palette-swatches></div>
+                    </details>
+                    <div v-if="currentLessonBlock.artworkIds?.length" class="lesson-art-grid"
+                        :class="{'two':currentLessonBlock.artworkIds.length>1}">
+                        <article class="lesson-art-item" v-for="id in currentLessonBlock.artworkIds" :key="id"><button
+                                @click="openArtwork(id)">
+                                <div class="work-image lesson-img"><img :src="by(artworks,id).image"
+                                        :alt="currentLessonBlock.type==='question'&&!lessonProgressRecord.answers[currentLessonBlock.id]?'Произведение для вопроса':by(artworks,id).title"><span
+                                        class="img-fallback">Произведение</span></div><template
+                                    v-if="currentLessonBlock.type!=='question'||lessonProgressRecord.answers[currentLessonBlock.id]"><strong>{{by(artworks,id).title}}</strong><small>{{by(artworks,id).artist}}</small></template>
+                            </button><artwork-quick-palette-trigger :artwork="by(artworks,id)"
+                                :saved-colors="savedColors" :open="quickPaletteId===id" @toggle="toggleQuickPalette"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article>
+                    </div>
+                    <template v-if="currentLessonBlock.type==='question'&&lessonQuestion">
+                        <div class="quiz-answers"><button v-for="option in lessonQuestionOptions" :key="option.id"
+                                class="answer" :disabled="!!lessonProgressRecord.answers[currentLessonBlock.id]"
+                                :class="{picked:lessonProgressRecord.answers[currentLessonBlock.id]?.selectedId===option.id,correct:lessonProgressRecord.answers[currentLessonBlock.id]&&option.id===lessonQuestion.correct}"
+                                @click="answerLessonQuestion(option.id)">{{option.label}}<span>{{!lessonProgressRecord.answers[currentLessonBlock.id]?'○':option.id===lessonQuestion.correct?'✓':lessonProgressRecord.answers[currentLessonBlock.id].selectedId===option.id?'×':'○'}}</span></button>
+                        </div>
+                        <div v-if="lessonProgressRecord.answers[currentLessonBlock.id]" class="feedback">
+                            <strong>{{lessonProgressRecord.answers[currentLessonBlock.id].correct?'Верно':'Обрати внимание'}}</strong>
+                            <p>{{lessonQuestion.explanation}}</p>
+                        </div>
+                    </template>
+                    <template v-if="currentLessonBlock.type==='reflection'"><label class="textarea-label"
+                            for="lesson-reflection">Личное наблюдение <span>· необязательно</span></label><textarea
+                            id="lesson-reflection" rows="4" maxlength="1200" :value="lessonProgressRecord.reflection"
+                            @input="updateLessonReflection($event.target.value)"
+                            placeholder="Запиши то, что хочется запомнить."></textarea>
+                        <p class="micro-muted">Это локальная запись, а не психологическая оценка.</p>
+                    </template>
+                    <div class="lesson-actions"><button class="muted-btn"
+                            :disabled="lessonProgressRecord.currentBlock===0"
+                            @click="previousLessonBlock"><art-arrow-icon direction="left"
+                                :colors="activeIconColors"></art-arrow-icon> Назад</button><button class="action-btn"
+                            :disabled="currentLessonBlock.type==='question'&&!lessonProgressRecord.answers[currentLessonBlock.id]"
+                            @click="nextLessonBlock">{{lessonProgressRecord.currentBlock===activeLesson.blocks.length-1?'Завершить':'Далее'}}
+                            <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></div>
+                </section>
+
+                <section v-else-if="page==='practice'" class="view">
+                    <button v-if="practiceReturn==='artist'||practiceReturn==='period'" class="back" @click="returnFromPractice"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> {{practiceReturn==='artist'?activeArtist.name:activePeriod.title}}</button>
+                    <div class="kicker">КОНЕЧНЫЕ СЕССИИ · БЕЗ СПЕШКИ</div>
+                    <h1>Практика<span class="thin-period">.</span></h1>
+                    <div class="practice-scope-summary"><span>ОБЛАСТЬ</span><strong>{{practiceScopeLabel}}</strong><small>{{artworkCountLabel(practiceScopeArtworks.length)}} доступно</small></div>
+                    <div v-if="inProgressSession" class="resume-card">
+                        <div><span class="micro-label">НЕЗАВЕРШЁННАЯ
+                                СЕССИЯ</span><strong>{{inProgressSession.scopeLabel||by(practiceSets,inProgressSession.practiceSetId)?.title||'Повторение ошибок'}}</strong><small>Вопрос {{inProgressSession.currentIndex+1}} из
+                                {{inProgressSession.questionIds.length}}</small></div><button class="arrow-button"
+                            @click="resumePractice(inProgressSession.id)">Продолжить <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="practice-scope-tabs" role="group" aria-label="Область практики"><button :class="{active:practiceScopeType==='all'}" @click="setPracticeScope('all')">Всё искусство</button><button :class="{active:practiceScopeType==='period'}" @click="setPracticeScope('period')">Эпоха</button><button :class="{active:practiceScopeType==='artist'}" @click="setPracticeScope('artist')">Художник</button></div>
+                    <label v-if="practiceScopeType==='period'" class="practice-scope-select"><span>Эпоха</span><select v-model="practiceScopeId"><option v-for="period in periods" :key="period.id" :value="period.id">{{period.title}}</option></select></label>
+                    <label v-if="practiceScopeType==='artist'" class="practice-scope-select"><span>Художник</span><select v-model="practiceScopeId"><option v-for="artist in practiceArtists" :key="artist.id" :value="artist.id">{{artist.name}}</option></select></label>
+                    <div class="practice-mode-grid"><button v-for="mode in practiceModeOptions" :key="mode.id" type="button" :class="{selected:selectedPracticeMode===mode.id,unavailable:!mode.available}" @click="selectedPracticeMode=mode.id"><art-icon :name="mode.icon" class="app-icon" :style="globalIconStyle('practice-mode-'+mode.id)" aria-hidden="true"></art-icon><span><strong>{{mode.title}}</strong><small>{{mode.available?mode.count+' вопрос'+(mode.count===1?'':mode.count<5?'а':'ов'):mode.reason}}</small></span></button></div>
+                    <button class="action-btn practice-start" :disabled="!selectedPracticeModeState.available" @click="startSelectedPractice">Начать <span>{{selectedPracticeModeState.available?'· '+selectedPracticeModeState.count:''}}</span><art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    <p v-if="!selectedPracticeModeState.available" class="practice-unavailable">{{selectedPracticeModeState.reason}}</p>
+                    <details class="legacy-practice"><summary>Готовые тематические тренировки · {{practiceSets.length}}</summary><article class="practice-card" v-for="set in practiceSets" :key="set.id"><div class="micro-label">{{set.questionIds.length}} ВОПРОСА · {{set.periodIds.length}} ТЕМЫ</div><h3>{{set.title}}</h3><p>{{set.summary}}</p><button class="secondary-btn full arrow-button" @click="startPractice(set.id)">Начать тренировку <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></article></details>
+                    <div class="section-heading">
+                        <h2>Повторение ошибок</h2><span>{{unresolvedMistakes.length}}</span>
+                    </div>
+                    <div class="review-card">
+                        <p v-if="unresolvedMistakes.length">Здесь только вопросы, в которых последний ответ был
+                            неверным.</p>
+                        <p v-else>Нерешённых ошибок пока нет. Они появятся после завершённых тренировок.</p><button
+                            class="secondary-btn full arrow-button" :disabled="!unresolvedMistakes.length"
+                            @click="startUnresolvedReview">Повторить ошибки <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                </section>
+
+                <section v-else-if="page==='practice-session'&&activeSession&&currentPracticeQuestion" class="view">
+                    <button class="back" @click="go('practice')"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon> Сохранить и выйти</button>
+                    <div class="practice-count"><span>ВОПРОС {{activeSession.currentIndex+1}} /
+                            {{activeSession.questionIds.length}}</span><span>{{activeSession.score}} ВЕРНЫХ</span></div>
+                    <div class="progress-line practice-session-progress"><span :style="{width:((activeSession.currentIndex+1)/activeSession.questionIds.length*100)+'%'}"></span></div>
+                    <div v-if="activeSession.mode!=='find'" class="practice-images" :class="{'two':currentPracticeQuestion.artworkIds.length>1}">
+                        <div class="work-image practice-art" v-for="id in currentPracticeQuestion.artworkIds" :key="id">
+                            <img :src="by(artworks,id).image"
+                                :alt="activeSession.answers[currentPracticeQuestion.id]?by(artworks,id).title:'Произведение для вопроса'"><span
+                                class="img-fallback">Произведение</span><artwork-quick-palette-trigger
+                                :artwork="by(artworks,id)" :saved-colors="savedColors" :open="quickPaletteId===id"
+                                @toggle="toggleQuickPalette"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></div>
+                    </div>
+                    <h1 class="practice-question">{{currentPracticeQuestion.prompt}}</h1>
+                    <div v-if="activeSession.mode==='find'" class="practice-image-answers"><button v-for="option in currentPracticeOptions" :key="option.id" :disabled="!!activeSession.answers[currentPracticeQuestion.id]" :class="{picked:activeSession.answers[currentPracticeQuestion.id]?.selectedId===option.id,correct:activeSession.answers[currentPracticeQuestion.id]&&option.id===currentPracticeQuestion.correct}" @click="choosePracticeAnswer(option.id)"><img :src="by(artworks,option.id).image" :alt="activeSession.answers[currentPracticeQuestion.id]?option.label:'Вариант произведения'"><span v-if="activeSession.answers[currentPracticeQuestion.id]">{{option.label}}</span></button></div>
+                    <div v-else class="quiz-answers"><button v-for="option in currentPracticeOptions" :key="option.id"
+                            class="answer" :disabled="!!activeSession.answers[currentPracticeQuestion.id]"
+                            :class="{picked:activeSession.answers[currentPracticeQuestion.id]?.selectedId===option.id,correct:activeSession.answers[currentPracticeQuestion.id]&&option.id===currentPracticeQuestion.correct}"
+                            @click="choosePracticeAnswer(option.id)">{{option.label}}<span>{{!activeSession.answers[currentPracticeQuestion.id]?'○':option.id===currentPracticeQuestion.correct?'✓':activeSession.answers[currentPracticeQuestion.id].selectedId===option.id?'×':'○'}}</span></button>
+                    </div>
+                    <div v-if="activeSession.answers[currentPracticeQuestion.id]" class="feedback">
+                        <strong>{{activeSession.answers[currentPracticeQuestion.id].correct?'Верно':'Разберём ответ'}}</strong>
+                        <p>{{currentPracticeQuestion.explanation}}</p>
+                        <div class="answer-reveal" v-for="id in currentPracticeQuestion.artworkIds" :key="id">
+                            {{by(artworks,id).title}} · {{by(artworks,id).artist}}</div><button class="action-btn"
+                            @click="nextPracticeQuestion">{{activeSession.currentIndex===activeSession.questionIds.length-1?'Показать результат':'Следующий вопрос'}} <art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                </section>
+
+                <section v-else-if="page==='practice-result'&&practiceSummary" class="view">
+                    <div class="kicker">ТРЕНИРОВКА ЗАВЕРШЕНА</div>
+                    <h1>{{practiceSummary.correct}} / {{practiceSummary.total}}<span class="thin-period">.</span></h1>
+                    <p class="lead">Результат и каждый ответ сохранены локально.</p>
+                    <div v-if="practiceSummary.mistakes.length" class="result-block">
+                        <h2>Разбор ошибок</h2>
+                        <article v-for="question in practiceSummary.mistakes" :key="question.id">
+                            <strong>{{question.prompt}}</strong>
+                            <p>{{question.explanation}}</p>
+                        </article>
+                        <h3>Стоит повторить</h3>
+                        <div class="feature-list"><span v-for="topic in practiceSummary.topics"
+                                :key="topic">{{topic}}</span></div>
+                    </div>
+                    <div v-else class="success-card">Все ответы верны. Можно перейти к новой теме.</div>
+                    <div class="result-actions"><button class="action-btn" @click="repeatPracticeSession">Повторить <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button><button class="secondary-btn full arrow-button" @click="chooseAnotherPracticeMode">Выбрать другой режим <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></div>
+                </section>
+
+                <section v-else-if="page==='ai'" class="view"><button class="back"
+                        @click="go('library')"><art-arrow-icon direction="left"
+                            :colors="activeIconColors"></art-arrow-icon> Мои уроки</button>
+                    <div class="kicker">GEMINI · ПЕРСОНАЛЬНЫЙ УРОК</div>
+                    <h1 class="inner-title">Новый маршрут</h1>
+                    <p class="lead">Gemini использует только выбранную тему и проверенные ID произведений. Избранное,
+                        чувства и заметки не отправляются.</p>
+                    <div class="form-section"><label for="ai-topic">Тема</label><select id="ai-topic" v-model="aiTopic">
+                            <option v-for="period in periods" :key="period.id" :value="period.id">{{period.title}}
+                            </option>
+                        </select><label for="ai-level">Сложность</label><select id="ai-level" v-model="aiLevel">
+                            <option value="simple">Начальный уровень</option>
+                            <option value="deep">Углублённый уровень</option>
+                        </select><label for="ai-style">Подача</label><select id="ai-style" v-model="aiStyle">
+                            <option value="visual">Через визуальные детали</option>
+                            <option value="context">Через исторический контекст</option>
+                            <option value="compare">Через сравнение</option>
+                        </select>
+                        <div class="action-note"><button class="action-btn" :disabled="aiLoading"
+                                @click="generateAI">{{aiLoading?'Создаём структуру…':'Создать и сохранить урок'}}
+                                <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                            <p class="micro-muted">Урок сохраняется автоматически. AI-материал может ошибаться; музейные
+                                источники доступны на страницах произведений.</p>
+                        </div>
+                    </div>
+                    <div class="notice" v-if="aiError">{{aiError}}</div>
+                </section>
+
+                <section v-else-if="page==='profile'" class="view">
+                    <div class="kicker">ЛИЧНОЕ ПРОСТРАНСТВО · ТОЛЬКО НА УСТРОЙСТВЕ</div>
+                    <h1>Автопортрет<span class="thin-period">.</span></h1>
+                    <p class="lead">Любимые произведения, цвета, наблюдения и история изучения.</p>
+                    <div class="stat-strip">
+                        <div><strong>{{favorites.length}}</strong><span>В ГАЛЕРЕЕ</span></div>
+                        <div><strong>{{completedLessons}}</strong><span>УРОКОВ</span></div>
+                        <div><strong>{{completedSessions.length}}</strong><span>СЕССИЙ</span></div>
+                    </div>
+                    <div class="section-heading">
+                        <h2>Избранное</h2><button class="section-link" @click="go('gallery')">Все · {{favorites.length}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div v-if="favorites.length" class="gallery-grid">
+                        <article v-for="art in recentFavorites" :key="art.id" class="gallery-piece"><button
+                                class="gallery-piece-open" @click="openArtwork(art.id,'profile')">
+                                <div class="work-image gallery-img"><img :src="art.image" :alt="art.title" loading="lazy"><span
+                                        class="img-fallback">{{art.title}}</span></div><art-vector name="ui/mini-frame"
+                                    :colors="activeIconColors" decorative
+                                    class="gallery-mini-frame"></art-vector><strong>{{art.title}}</strong><span>{{art.artist}}</span>
+                            </button><artwork-quick-palette-trigger :artwork="art" :saved-colors="savedColors"
+                                :open="quickPaletteId===art.id" @toggle="toggleQuickPalette"
+                                @toggle-color="toggleSavedColor" @delete-color="removeUserColor"></artwork-quick-palette-trigger></article>
+                    </div>
+                    <div v-else class="empty-state">Сохрани произведение кнопкой-сердцем, и оно появится здесь.</div>
+                    <section v-if="k001Discovered" class="k001-teaser" aria-label="Экспонат К-001">
+                        <div class="k001-teaser-index">АРХИВНАЯ НАХОДКА / К-001 · УРОВЕНЬ {{k001Exhibit.level}}</div>
+                        <button ref="k001Trigger" class="k001-teaser-button" type="button" @click="openK001"><span
+                                class="k001-teaser-icon" aria-hidden="true">◌</span><span
+                                class="k001-teaser-copy"><strong>{{k001Exhibit.name}}</strong><small>{{k001Exhibit.statusLabel}}
+                                    · {{k001Exhibit.favoriteCount}} работ</small></span><art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </section>
+                    <section v-if="k002Discovered" class="k001-teaser k002-teaser" aria-label="Экспонат К-002">
+                        <div class="k001-teaser-index">ПРОИЗВОДСТВЕННЫЙ АРХИВ / К-002 · УРОВЕНЬ {{k002Exhibit.level}}
+                        </div><button ref="k002Trigger" class="k001-teaser-button" type="button" @click="openK002"><span
+                                class="k001-teaser-icon" aria-hidden="true">◇</span><span
+                                class="k001-teaser-copy"><strong>МУЖИЧОК-СОЗДАТЕЛЬ</strong><small>{{k002Exhibit.title}}
+                                    · {{k002Exhibit.countLabel}}</small></span><art-arrow-icon
+                                :colors="activeIconColors"></art-arrow-icon></button>
+                    </section>
+                    <div class="section-heading">
+                        <h2>Мои цвета</h2><button class="section-link" @click="go('colors')">Все · {{savedColors.length}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                    </div>
+                    <div class="profile-colors" v-if="savedColors.length"><button v-for="color in savedColorsRecent.slice(0,8)"
+                            :key="color.id" :style="{background:color.hex}" :title="by(artworks,color.artworkId)?.title"
+                            @click="openArtwork(color.artworkId,'profile')" :aria-label="color.hex"></button></div>
+                    <div v-else class="empty-state small">Добавь оттенки со страницы произведения.</div>
+                    <div class="section-heading"><h2>Мои уроки</h2><button class="section-link" @click="go('library')">Все · {{officialLessons.length+db.personalLessons.length}} <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button></div>
+                    <div class="profile-lessons"><button v-for="lesson in recentProfileLessons" :key="lesson.id" @click="openLesson(lesson.id,'library')"><span><strong>{{lesson.title}}</strong><small>{{by(periods,lesson.periodId)?.title||'Персональная тема'}}</small></span><span class="status-pill">{{lessonStatus(lesson.id)==='new'?'НЕ НАЧАТ':lessonStatus(lesson.id)==='in-progress'?'В ПРОЦЕССЕ':'ЗАВЕРШЁН'}}</span></button></div>
+                    <div class="section-heading emotions-header">
+                        <div>
+                            <h2>Мои чувства</h2>
+                            <p>Ты самостоятельно назначаешь им цвета.</p>
+                        </div><button class="icon-text" @click="shuffleEmotions"><art-icon name="palette"
+                                class="app-icon" :style="globalIconStyle('profile-palette')"
+                                aria-hidden="true"></art-icon><span>Перемешать</span></button>
+                    </div>
+                    <div class="mood-grid"><button class="mood" v-for="feeling in feelings" :key="feeling.id"
+                            @click="moodOpen=feeling.id"><art-icon :name="feeling.icon" class="mood-icon"
+                                :style="emotionIconStyle(feeling.id)"
+                                aria-hidden="true"></art-icon><span>{{feeling.name}}</span><small>{{emotionPalette(feeling.id).colorIds.length?'Моя палитра':'Не задано'}}</small></button></div>
+                    <p class="micro-muted">Это добровольная саморефлексия, не диагностика и не оценка состояния.</p>
+                    <div class="section-heading">
+                        <h2>История изучения</h2><span>{{learningHistory.length}}</span>
+                    </div>
+                    <div v-if="learningHistory.length" class="history-list">
+                        <div v-for="item in learningHistory" :key="item.at+item.label"><span>{{new
+                                Date(item.at).toLocaleDateString('ru-RU')}}</span><strong>{{item.label}}</strong><small>{{item.status}}</small>
+                        </div>
+                    </div>
+                    <div v-else class="empty-state small">История появится после первого урока или тренировки.</div>
+                    <div class="section-heading">
+                        <h2>Мой архив</h2>
+                    </div>
+                    <p class="small-muted">Экспорт включает все личные сущности. Импорт сначала проверяется и требует
+                        выбора: объединить или заменить.</p>
+                    <div class="archive-actions"><button class="action-btn" @click="exportArchive">Скачать JSON
+                            <span>↓</span></button><label class="upload-btn">Восстановить из JSON<input
+                                ref="importInput" type="file" accept="application/json,.json"
+                                @change="importArchive"></label><button class="danger-btn"
+                            @click="clearArchive">Очистить личные данные</button></div>
+                    <p class="micro-muted">Схема архива {{ARCHIVE_SCHEMA_VERSION}} · каталог {{CATALOG_VERSION}}</p>
+                    <button class="profile-settings-link" type="button" @click="go('settings')"><span><small>ОФОРМЛЕНИЕ</small><strong>Настройки</strong></span><span class="theme-preview" aria-hidden="true"><i v-for="color in activeIconColors" :key="color" :style="{background:color}"></i></span><art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                </section>
+
+                <section v-else-if="page==='settings'" class="view settings-view"><button class="back" @click="go('profile')"><art-arrow-icon direction="left" :colors="activeIconColors"></art-arrow-icon> Автопортрет</button>
+                    <div class="kicker">ЛОКАЛЬНЫЕ НАСТРОЙКИ</div>
+                    <h1 class="inner-title">Настройки</h1>
+                    <section class="interface-color-settings" aria-labelledby="interface-color-title">
+                        <div class="section-heading"><div><h2 id="interface-color-title">Цвет интерфейса</h2><p>Три оттенка для SVG и декоративных акцентов.</p></div><span class="theme-preview large" aria-label="Активные цвета"><i v-for="color in activeIconColors" :key="color" :style="{background:color}" :title="color"></i></span></div>
+                        <div class="theme-mode-switch" role="group" aria-label="Режим цветового оформления"><button type="button" :class="{active:db.settings.interfaceColorMode==='automatic'}" :aria-pressed="db.settings.interfaceColorMode==='automatic'" @click="setInterfaceColorMode('automatic')">Автоматически</button><button type="button" :class="{active:db.settings.interfaceColorMode==='manual'}" :aria-pressed="db.settings.interfaceColorMode==='manual'" @click="setInterfaceColorMode('manual')">Вручную</button></div>
+                        <p v-if="db.settings.interfaceColorMode==='automatic'" class="settings-note">Используются три последних уникальных оттенка из «Моих цветов». Недостающие слоты остаются нейтрально-серыми.</p>
+                        <template v-else>
+                            <p class="settings-note">Ручная палитра сохранится и не изменится при добавлении новых оттенков.</p>
+                            <div class="manual-color-slots"><article v-for="(color,index) in db.settings.manualInterfacePalette" :key="index" :class="{selected:selectedThemeSlot===index}"><button type="button" class="manual-slot-select" @click="selectedThemeSlot=index" :aria-pressed="selectedThemeSlot===index"><span :style="{background:color}"></span><strong>Цвет {{index+1}}</strong></button><label><span class="sr-only">Выбрать цвет {{index+1}}</span><input type="color" :value="color" @input="setManualInterfaceColor(index,$event.target.value)"></label><label class="hex-field"><span>HEX</span><input type="text" :value="color" maxlength="7" inputmode="text" pattern="#[0-9A-Fa-f]{6}" @change="setManualInterfaceColor(index,$event.target.value)" @keyup.enter="$event.target.blur()"></label></article></div>
+                            <div class="saved-theme-colors"><div class="section-heading"><h2>Выбрать из «Моих цветов»</h2><span>{{savedColors.length}}</span></div><div v-if="savedColors.length" class="saved-theme-grid"><button v-for="color in savedColorsRecent" :key="color.id" type="button" :style="{background:color.hex}" :aria-label="`Назначить ${color.hex} в слот ${selectedThemeSlot+1}`" :title="color.hex" @click="setManualInterfaceColor(selectedThemeSlot,color.hex)"></button></div><p v-else class="empty-state small">Сохранённые оттенки появятся здесь после выбора цвета у произведения.</p></div>
+                        </template>
+                    </section>
+                </section>
+            </main>
+
+            <nav class="bottom-nav" aria-label="Основная навигация"><button
+                    :class="{current:['timeline','period','period-artists','period-artworks','period-lessons','artist','artist-artworks','artwork'].includes(page)||(page==='lesson'&&['period','period-lessons'].includes(lessonReturn))}"
+                    @click="go('timeline')"><art-icon name="time" class="app-icon" :style="globalIconStyle('nav-time')"
+                        aria-hidden="true"></art-icon><span>Время</span></button><button
+                    :class="{current:['practice','practice-session','practice-result','library','ai'].includes(page)||(page==='lesson'&&lessonReturn!=='period')}"
+                    @click="openPractice('all','','practice')"><art-icon name="practice" class="app-icon"
+                        :style="globalIconStyle('nav-practice')"
+                        aria-hidden="true"></art-icon><span>Практика</span></button><button
+                    :class="{current:['profile','gallery','colors','settings'].includes(page)}" @click="go('profile')"><art-icon name="self" class="app-icon"
+                        :style="globalIconStyle('nav-self')"
+                        aria-hidden="true"></art-icon><span>Автопортрет</span></button></nav>
+            <div class="modal-overlay" v-if="moodOpen" @click.self="moodOpen=null">
+                <div class="mood-modal">
+                    <div class="modal-head">
+                        <div>
+                            <div class="kicker">ЛИЧНАЯ ПАЛИТРА</div>
+                            <h2>{{feelings.find(item=>item.id===moodOpen)?.name}}</h2>
+                        </div><button @click="moodOpen=null" aria-label="Закрыть">×</button>
+                    </div>
+                    <p>Выбери сохранённые цвета, которые ты связываешь с этим чувством.</p>
+                    <div class="modal-swatches" v-if="savedColors.length"><button v-for="color in savedColors"
+                            :key="color.id" :style="{background:color.hex}"
+                            :class="{picked:emotionPalette(moodOpen).colorIds.includes(color.id)}"
+                            @click="toggleMoodColor(color.id)" :aria-label="color.hex"><span
+                                v-if="emotionPalette(moodOpen).colorIds.includes(color.id)">✓</span></button></div>
+                    <div v-else class="empty-state small">Сначала сохрани цвет из произведения.</div><button
+                        class="action-btn" @click="moodOpen=null">Готово <span>✓</span></button>
+                </div>
+            </div>
+            <div class="modal-overlay" v-if="importPreview">
+                <div class="mood-modal">
+                    <div class="modal-head">
+                        <div>
+                            <div class="kicker">ПРОВЕРЕННЫЙ АРХИВ</div>
+                            <h2>Как восстановить?</h2>
+                        </div><button @click="importPreview=null" aria-label="Закрыть">×</button>
+                    </div>
+                    <p>{{importPreview.favorites.length}} избранных · {{importPreview.personalLessons.length}}
+                        персональных уроков · {{importPreview.practiceSessions.length}} тренировок.</p>
+                    <div class="archive-actions"><button class="action-btn" @click="applyImport('merge')">Объединить
+                            <span>＋</span></button><button class="secondary-btn full"
+                            @click="applyImport('replace')">Заменить текущие данные</button><button class="text-btn"
+                            @click="importPreview=null">Отмена</button></div>
+                </div>
+            </div>
+            <div v-if="k001Open" class="k001-backdrop" role="presentation" @click.self="closeK001">
+                <section ref="k001Dialog" class="k001-sheet" role="dialog" aria-modal="true" aria-labelledby="k001-name"
+                    aria-describedby="k001-description" tabindex="-1">
+                    <header class="k001-sheet-header">
+                        <div class="k001-sheet-micro">ART. / СЕКРЕТНЫЙ ФОНД / ЭКСПОНАТ К-001</div><button
+                            class="k001-close" aria-label="Закрыть экспонат К-001" type="button"
+                            @click="closeK001">✕</button>
+                    </header>
+                    <div class="k001-stage">
+                        <div class="k001-stage-corner k001-stage-corner-top">УРОВЕНЬ {{k001Exhibit.level}} / 5 ·
+                            {{k001Exhibit.favoriteCount}} РАБОТ</div><art-vector v-if="k001Exhibit.school"
+                            :name="`k001/overlays/${k001Exhibit.school}`" :colors="activeIconColors" decorative
+                            class="k001-vector k001-overlay-vector"></art-vector><art-vector
+                            :name="`k001/levels/level-${k001Exhibit.level}`" :colors="activeIconColors"
+                            class="k001-vector k001-level-vector"></art-vector><span
+                            class="k001-stage-corner k001-stage-corner-bottom">{{k001Exhibit.school||'НЕЙТРАЛЬНАЯ АТРИБУЦИЯ'}}</span>
+                    </div>
+                    <div class="k001-description">
+                        <div class="k001-sheet-micro">АВТОР НЕ УСТАНОВЛЕН / XXI ВЕК</div>
+                        <h2 id="k001-name">{{k001Exhibit.name}}</h2>
+                        <p id="k001-description" class="k001-subtitle">{{k001Exhibit.heading}}</p>
+                        <p class="k001-description-period">{{k001Exhibit.period}}</p>
+                        <div class="k001-status"><art-vector :name="`k001/status/${k001Exhibit.status}`"
+                                :colors="activeIconColors"
+                                decorative></art-vector><span>{{k001Exhibit.statusLabel}}</span></div>
+                        <div class="k001-metadata">
+                            <div><span>Материал</span><strong>{{k001Exhibit.material}}</strong></div>
+                            <div><span>Состояние</span><strong>{{k001Exhibit.condition}}</strong></div>
+                            <div><span>Атрибуция</span><strong>{{k001Exhibit.attribution}}</strong></div>
+                            <div><span>Ценность</span><strong>{{k001Exhibit.value}}</strong></div>
+                        </div>
+                        <div class="k001-report">
+                            <div class="k001-report-title">ЗАКЛЮЧЕНИЕ ЭКСПЕРТНОЙ КОМИССИИ</div>
+                            <p>{{k001Exhibit.observation}} {{k001Exhibit.conclusion}}</p><button type="button"
+                                class="k001-recheck" @click="k001Revision++">Запросить повторную экспертизу
+                                <art-arrow-icon :colors="activeIconColors"></art-arrow-icon></button>
+                        </div>
+                        <div class="k001-final">{{k001Exhibit.protection}}</div>
+                    </div>
+                </section>
+            </div>
+            <div v-if="k002Open" class="k001-backdrop" role="presentation" @click.self="closeK002">
+                <section ref="k002Dialog" class="k001-sheet k002-sheet" role="dialog" aria-modal="true"
+                    aria-labelledby="k002-name" aria-describedby="k002-description" tabindex="-1">
+                    <header class="k001-sheet-header">
+                        <div class="k001-sheet-micro">ART. / ПРОИЗВОДСТВЕННЫЙ ФОНД / ЭКСПОНАТ К-002</div><button
+                            class="k001-close k002-close" aria-label="Закрыть экспонат К-002" type="button"
+                            @click="closeK002">✕</button>
+                    </header>
+                    <div class="k001-stage k002-stage">
+                        <div class="k001-stage-corner k001-stage-corner-top">УРОВЕНЬ {{k002Exhibit.level}} / 5 ·
+                            {{k002Exhibit.count}} УРОКОВ</div><art-vector
+                            :name="`k002/levels/level-${k002Exhibit.level}`" :colors="activeIconColors"
+                            class="k002-vector"></art-vector><span
+                            class="k001-stage-corner k001-stage-corner-bottom">ПРОИЗВОДСТВО ПОДТВЕРЖДЕНО</span>
+                    </div>
+                    <div class="k001-description">
+                        <div class="k001-sheet-micro">НЕЗАВИСИМАЯ ВЕТКА / УЧЁТ ПО УНИКАЛЬНЫМ ID</div>
+                        <h2 id="k002-name">{{k002Exhibit.name}}</h2>
+                        <p id="k002-description" class="k001-subtitle">{{k002Exhibit.title}}</p>
+                        <p class="k001-description-period">{{k002Exhibit.status}} · {{k002Exhibit.nextAt?`следующий
+                            уровень после ${k002Exhibit.nextAt} уроков`:'максимальный уровень'}}</p>
+                        <div class="k001-metadata">
+                            <div><span>Создано</span><strong>{{k002Exhibit.count}} персональных уроков</strong></div>
+                            <div><span>Источник</span><strong>Только успешно сохранённые генерации</strong></div>
+                            <div><span>Влияние на К-001</span><strong>Отсутствует</strong></div>
+                        </div>
+                        <div class="k001-report">
+                            <div class="k001-report-title">ЗАКЛЮЧЕНИЕ ПРОИЗВОДСТВЕННОЙ КОМИССИИ</div>
+                            <p>{{k002Exhibit.report}}</p><button type="button" class="k001-recheck"
+                                @click="k002Revision++">Повторить служебную проверку <art-arrow-icon
+                                    :colors="activeIconColors"></art-arrow-icon></button>
+                        </div>
+                        <div class="k001-final">К-002 / СОЗДАНИЕ УРОКОВ УЧТЕНО ЛОКАЛЬНО</div>
+                    </div>
+                </section>
+            </div>
+            <artwork-viewer v-if="artworkViewerOpen" :artwork="activeArtwork" @close="closeArtworkViewer" @save-color="savePickedColor"></artwork-viewer>
+            <div class="toast" v-if="toast"><span>{{toast}}</span><button v-if="lastDeletedColor" type="button" @click="undoDeletedColor">Отменить</button></div>
+        </div>
+    </div>
+</body>
+
+</html>

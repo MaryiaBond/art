@@ -1,0 +1,61 @@
+{
+  "firstCounts": {
+    "artists": 5,
+    "artworks": 6,
+    "button": "Исследовать ещё"
+  },
+  "extensionState": {
+    "works": [
+      "Кувшинки",
+      "Впечатление. Восход солнца",
+      "Water Lilies Study",
+      "Garden Figure",
+      "Dancer at Rest",
+      "Road at Louveciennes",
+      "Woman by a Window"
+    ],
+    "notice": "",
+    "button": [
+      "Исследовать ещё"
+    ]
+  },
+  "arrowBefore": {
+    "name": "ui/three-stroke-arrow",
+    "colors": [
+      "#777B77",
+      "#929692",
+      "#A8ABA7"
+    ],
+    "children": 3
+  },
+  "arrowAfter": {
+    "name": "ui/three-stroke-arrow",
+    "colors": [
+      "#5D7482",
+      "#A6B5A3",
+      "#D4C3A4"
+    ],
+    "transform": "matrix(-1, 0, 0, 1, 0, 0)",
+    "children": 3
+  },
+  "idbBefore": {
+    "localArtworks": 5,
+    "localArtists": 5,
+    "personalLessons": 1,
+    "colors": 3
+  },
+  "idbAfter": {
+    "localArtworks": 5,
+    "localArtists": 5,
+    "personalLessons": 1,
+    "colors": 3
+  },
+  "cacheKeys": [
+    "art-v1-0-8"
+  ],
+  "renderedArrow": {
+    "count": 2,
+    "legacyArrow": false
+  },
+  "consoleErrors": []
+}
